@@ -30,7 +30,7 @@
                         <tfoot>
                             <tr>
                                 <th colspan="5" class="text-center">
-                                    There are currently {{ $atcSessions->count() }} ATC Sessions online.
+                                    There are currently {{ $atcSessions->count() }} UK controllers online.
                                 </th>
                             </tr>
                         </tfoot>
@@ -46,7 +46,7 @@
             <div class="row">
                 <div class="col-md-12" style="margin-bottom: 15px;">
                     <p class="text-center">
-                        Coming early 2017!
+                        Coming soon!
                     </p>
                 </div>
 

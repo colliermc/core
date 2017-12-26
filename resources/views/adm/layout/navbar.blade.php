@@ -8,7 +8,7 @@
         <ul class="dropdown-menu">
             <!-- User image -->
             <li class="user-header bg-light-blue">
-                {!! HTML::image("assets/images/default_avatar.png", "User Image", ["class" => "img-circle"]) !!}
+                {!! HTML::image("images/default_avatar.png", "User Image", ["class" => "img-circle"]) !!}
                 <p>
                     {{ $_account->name_first . ' ' . $_account->name_last }}
                     <small>Member since {{ $_account->created_at->diffForHumans() }} <br /><em> {{ $_account->created_at->toDateTimeString() }}</em></small>
@@ -32,7 +32,9 @@
                     <a href="#" class="btn btn-default btn-flat">Profile</a>
                 </div>-->
                 <div class="pull-right">
-                    <a href="{{ URL::route('logout') }}" class="btn btn-default btn-flat">Sign out</a>
+                    {!! Form::open(['route' => 'logout', 'id' => 'logout-form']) !!}
+                        <a href="{{ route('logout') }}" class="btn btn-default btn-flat" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">LOG OUT</a>
+                    {!! Form::close() !!}
                 </div>
             </li>
         </ul>

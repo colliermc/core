@@ -31,6 +31,8 @@ class UpdateFeedbackFormRequest extends Request
             'question.*.type' => 'required|exists:mship_feedback_question_types,name',
             'question.*.exists' => 'exists:mship_feedback_questions,id',
             'question.*.required' => 'required|boolean',
+            'targeted' => 'nullable|boolean',
+            'public' => 'nullable|boolean',
         ];
     }
 

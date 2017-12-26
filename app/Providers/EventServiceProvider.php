@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use App\Events\NetworkData\AtcSessionEnded;
-use App\Listeners\NetworkData\AtcSessionRecordedSuccessNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -15,18 +14,24 @@ class EventServiceProvider extends ServiceProvider
      */
     protected $listen = [
         \App\Events\Mship\AccountTouched::class => [
-            \App\Listeners\Sync\PushToForum::class,
-            \App\Listeners\Sync\PushToMoodle::class,
-            \App\Listeners\Sync\PushToRts::class,
-            \App\Listeners\Sync\PushToPts::class,
-            \App\Listeners\Sync\PushToTeamSpeak::class,
+            // Look to implement a sync to external services here
         ],
+
+        \App\Events\Mship\QualificationAdded::class => [
+            \App\Listeners\Mship\SendS1Email::class,
+        ],
+
         \App\Events\Mship\Feedback\NewFeedbackEvent::class => [
-            \App\Listeners\Mship\Feedback\NotifyOfNewFeedback::class,
+            //\App\Listeners\Mship\Feedback\NotifyOfNewFeedback::class,
+        ],
+
+        \App\Events\Mship\Bans\BanUpdated::class => [
+            \App\Listeners\Sync\Bans\SyncBanToTs::class,
+            \App\Listeners\Sync\Bans\SyncBanToForum::class,
         ],
 
         AtcSessionEnded::class => [
-            AtcSessionRecordedSuccessNotification::class,
+            //AtcSessionRecordedSuccessNotification::class, // temporarily disabled
         ],
 
         \App\Events\VisitTransfer\ApplicationSubmitted::class => [
@@ -54,6 +59,10 @@ class EventServiceProvider extends ServiceProvider
 
         \App\Events\VisitTransfer\ApplicationStatusChanged::class => [
             \App\Listeners\VisitTransfer\NotifyApplicantOfStatusChange::class,
+        ],
+
+        \App\Events\VisitTransfer\ReferenceCancelled::class => [
+            \App\Listeners\VisitTransfer\NotifyApplicantOfReferenceCancellation::class,
         ],
 
         \App\Events\VisitTransfer\ReferenceUnderReview::class => [

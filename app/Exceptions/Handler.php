@@ -3,13 +3,12 @@
 namespace App\Exceptions;
 
 use App;
-use Log;
 use Auth;
-use Slack;
-use Request;
 use Exception;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Log;
+use Request;
+use Slack;
 
 class Handler extends ExceptionHandler
 {
@@ -27,6 +26,20 @@ class Handler extends ExceptionHandler
         \Illuminate\Session\TokenMismatchException::class,
         \Illuminate\Validation\ValidationException::class,
         \Illuminate\Queue\MaxAttemptsExceededException::class,
+        \League\OAuth2\Server\Exception\OAuthServerException::class,
+    ];
+
+    /**
+     * A list of the inputs that are never flashed for validation exceptions.
+     *
+     * @var array
+     */
+    protected $dontFlash = [
+        'password',
+        'password_confirmation',
+        'old_password',
+        'new_password',
+        'new_password_confirmation',
     ];
 
     /**
@@ -133,21 +146,5 @@ class Handler extends ExceptionHandler
             Slack::setUsername('Error Handling')->to($channel)->attach($attachment)->send();
         } catch (Exception $e) {
         }
-    }
-
-    /**
-     * Convert an authentication exception into an unauthenticated response.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Illuminate\Auth\AuthenticationException  $exception
-     * @return \Illuminate\Http\Response
-     */
-    protected function unauthenticated($request, AuthenticationException $exception)
-    {
-        if ($request->expectsJson()) {
-            return response()->json(['error' => 'Unauthenticated.'], 401);
-        }
-
-        return redirect()->guest('/login');
     }
 }

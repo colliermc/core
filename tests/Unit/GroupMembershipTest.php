@@ -4,8 +4,9 @@ namespace Tests\Unit;
 
 use Tests\BrowserKitTestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\TestCase;
 
-class GroupMembershipTest extends BrowserKitTestCase
+class GroupMembershipTest extends TestCase
 {
     use DatabaseTransactions;
 
@@ -20,7 +21,7 @@ class GroupMembershipTest extends BrowserKitTestCase
 
         $member->fresh()->addCommunityGroup($group);
 
-        $this->seeInDatabase('community_membership', [
+        $this->assertDatabaseHas('community_membership', [
             'account_id' => $member->id,
             'group_id' => $group->id,
         ]);
@@ -71,7 +72,7 @@ class GroupMembershipTest extends BrowserKitTestCase
     /** @test */
     public function itIsNotPossibleToJoinACommunityGroupAsANonDivisionMember()
     {
-        $this->setExpectedException(\App\Exceptions\Community\Membership\MustBeADivisionMemberException::class);
+        $this->expectException(\App\Exceptions\Community\MustBeADivisionMemberException::class);
 
         $member = factory(\App\Models\Mship\Account::class)->create();
         $international = \App\Models\Mship\State::findByCode('INTERNATIONAL');
@@ -99,7 +100,7 @@ class GroupMembershipTest extends BrowserKitTestCase
     /** @test */
     public function itIsNotPossibleToJoinTheSameGroupTwice()
     {
-        $this->setExpectedException(\App\Exceptions\Community\Membership\AlreadyAGroupTierMemberException::class);
+        $this->expectException(\App\Exceptions\Community\AlreadyAGroupTierMemberException::class);
 
         $member = factory(\App\Models\Mship\Account::class)->create();
         $divisionState = \App\Models\Mship\State::findByCode('DIVISION');
@@ -114,7 +115,7 @@ class GroupMembershipTest extends BrowserKitTestCase
     /** @test */
     public function itIsNotPossibleToJoinMoreThanOneGroupFromTheSameTier()
     {
-        $this->setExpectedException(\App\Exceptions\Community\Membership\AlreadyAGroupTierMemberException::class);
+        $this->expectException(\App\Exceptions\Community\AlreadyAGroupTierMemberException::class);
 
         $member = factory(\App\Models\Mship\Account::class)->create();
         $divisionState = \App\Models\Mship\State::findByCode('DIVISION');

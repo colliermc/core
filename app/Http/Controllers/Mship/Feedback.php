@@ -2,25 +2,34 @@
 
 namespace App\Http\Controllers\Mship;
 
+use App\Events\Mship\Feedback\NewFeedbackEvent;
+use App\Models\Mship\Account;
+use App\Models\Mship\Feedback\Answer;
+use App\Models\Mship\Feedback\Form;
+use Illuminate\Http\Request;
 use Redirect;
 use Validator;
-use Illuminate\Http\Request;
-use App\Models\Mship\Account;
-use App\Models\Mship\Feedback\Form;
-use App\Models\Mship\Feedback\Answer;
-use App\Events\Mship\Feedback\NewFeedbackEvent;
 
 class Feedback extends \App\Http\Controllers\BaseController
 {
+    private $returnList;
+
     public function getFeedbackFormSelect()
     {
-        return view('mship.feedback.form');
+        $forms = Form::whereEnabled(true)->orderBy('id', 'asc')->public()->getModels();
+        $feedbackForms = [];
+        foreach ($forms as $f) {
+            $feedbackForms[$f->slug] = $f->name;
+        }
+
+        return view('mship.feedback.form')
+            ->with('feedbackForms', $feedbackForms);
     }
 
     public function postFeedbackFormSelect(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'feedback_type' => 'required|exists:mship_feedback_forms,id',
+            'feedback_type' => 'required|exists:mship_feedback_forms,slug',
         ]);
         if ($validator->fails()) {
             return Redirect::back()
@@ -34,9 +43,10 @@ class Feedback extends \App\Http\Controllers\BaseController
     public function getFeedback(Form $form)
     {
         $questions = $form->questions()->orderBy('sequence')->get();
-        if (!$questions) {
+        if (!$questions || !$form->enabled) {
             // We have no questions to display!
-            return Redirect::route('mship.manage.dashboard');
+            return Redirect::route('mship.manage.dashboard')
+                ->withError('There was an issue loading the requested form');
         }
 
         // Lets parse the questions ready for inserting
@@ -53,8 +63,8 @@ class Feedback extends \App\Http\Controllers\BaseController
                     }
                     continue;
                 }
-            // No values, so we cant use it :/
-            continue;
+                // No values, so we cant use it :/
+                continue;
             }
 
             $question->form_html .= sprintf($question->type->code, $question->slug, old($question->slug));
@@ -100,8 +110,8 @@ class Feedback extends \App\Http\Controllers\BaseController
                 }
             }
             $errormessages[$question->slug.'.required'] = "You have not supplied an answer for '".$question->question."'.";
-            $errormessages[$question->slug.'.exists'] = 'This user was not found. Please ensure that you have entered the CID correctly, and that they are a UK memeber';
-            $errormessages[$question->slug.'.integer'] = 'You have not entered in a valid integer.';
+            $errormessages[$question->slug.'.exists'] = 'This user was not found. Please ensure that you have entered the CID correctly, and that they are a UK member';
+            $errormessages[$question->slug.'.integer'] = 'You have not entered a valid integer.';
 
             // Add the answer to the array, ready for inserting
             $answerdata[] = new Answer([
@@ -116,14 +126,19 @@ class Feedback extends \App\Http\Controllers\BaseController
                         ->withInput();
         }
 
-        if (!$cidfield) {
+        $account = null;
+        if (!$cidfield && !$form->targeted) {
+            // No specific target, feedback points at submitter
+            $account = Account::find(\Auth::user()->id);
+        } elseif ($cidfield != null) {
+            $account = Account::find($request->input($cidfield));
+        } else {
             // No one specified a user lookup field!
             return Redirect::route('mship.manage.dashboard')
                     ->withError("Sorry, we can't process your feedback at the moment. Please check back later.");
         }
 
         // Make new feedback
-        $account = Account::find($request->input($cidfield));
         $feedback = $account->feedback()->create([
             'submitter_account_id' => \Auth::user()->id,
             'form_id' => $form->id,
@@ -135,5 +150,35 @@ class Feedback extends \App\Http\Controllers\BaseController
 
         return Redirect::route('mship.manage.dashboard')
                 ->withSuccess('Your feedback has been recorded. Thank you!');
+    }
+
+    public function getUserSearch($name, Request $request)
+    {
+        $matches = Account::whereRaw("CONCAT(`name_first`, ' ',`name_last`) LIKE '%".$name."%'")->limit(5)->with(['states'])->get(['id', 'name_first', 'name_last']);
+
+        $this->returnList = collect();
+
+        $matches->transform(function ($user, $key) {
+            foreach ($user->states as $key => $state) {
+                if ($state->is_permanent) {
+                    if ($state->code = 'INTERNATIONAL' && ($state->region->first() == '*' || $state->division->first() == '*')) {
+                        $user->state = 'Intl.';
+                    } else {
+                        $user->state = $state->region->first().'/'.$state->division->first();
+                    }
+                }
+            }
+
+            $this->returnList->push(collect([
+            'cid' => $user->id,
+            'name' => $user->real_name,
+            'status' => $user->state,
+          ]));
+
+            return $user;
+        });
+        $matches = null;
+
+        return response()->json($this->returnList);
     }
 }

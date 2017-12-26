@@ -2,7 +2,7 @@
 
 namespace App\Models\Mship\Feedback;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Model;
 
 /**
  * App\Models\Mship\Feedback\Answer
@@ -10,14 +10,15 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property int $feedback_id
  * @property int $question_id
- * @property string $response
+ * @property string|null $response
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Sys\Data\Change[] $dataChanges
  * @property-read \App\Models\Mship\Feedback\Feedback $feedback
  * @property-read \App\Models\Mship\Feedback\Question $question
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Feedback\Answer notPermanent()
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Feedback\Answer whereFeedbackId($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Feedback\Answer whereId($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Feedback\Answer whereQuestionId($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Feedback\Answer whereResponse($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Feedback\Answer notPermanent()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Feedback\Answer whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Feedback\Answer whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Feedback\Answer whereQuestionId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Feedback\Answer whereResponse($value)
  * @mixin \Eloquent
  */
 class Answer extends Model

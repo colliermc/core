@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
-use Session;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\BaseController;
+use Auth;
 use Illuminate\Foundation\Auth\ResetsPasswords;
+use Illuminate\Http\Request;
 
 /**
  * This controller is responsible for handling password reset requests
@@ -23,16 +22,6 @@ class ResetPasswordController extends BaseController
      * @var string
      */
     protected $redirectTo = '/';
-
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        $this->middleware('guest');
-    }
 
     /**
      * Get the password reset validation rules.
@@ -55,7 +44,7 @@ class ResetPasswordController extends BaseController
      */
     protected function credentials(Request $request)
     {
-        return array_merge(['id' => Session::get('auth.vatsim-sso')], $request->only(
+        return array_merge(['id' => Auth::guard('vatsim-sso')->user()->id], $request->only(
             'password', 'password_confirmation', 'token'
         ));
     }

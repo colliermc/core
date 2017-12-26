@@ -2,8 +2,7 @@
 
 namespace App\Models\Mship\Ban;
 
-use App\Traits\RecordsActivity;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -14,24 +13,30 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $reason_text
  * @property int $period_amount
  * @property string $period_unit
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
- * @property \Carbon\Carbon $deleted_at
+ * @property \Carbon\Carbon|null $created_at
+ * @property \Carbon\Carbon|null $updated_at
+ * @property \Carbon\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Mship\Account\Ban[] $bans
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Sys\Data\Change[] $dataChanges
  * @property-read mixed $period_hours
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Ban\Reason whereCreatedAt($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Ban\Reason whereDeletedAt($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Ban\Reason whereId($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Ban\Reason whereName($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Ban\Reason wherePeriodAmount($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Ban\Reason wherePeriodUnit($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Ban\Reason whereReasonText($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Ban\Reason whereUpdatedAt($value)
+ * @method static bool|null forceDelete()
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Ban\Reason onlyTrashed()
+ * @method static bool|null restore()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Ban\Reason whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Ban\Reason whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Ban\Reason whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Ban\Reason whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Ban\Reason wherePeriodAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Ban\Reason wherePeriodUnit($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Ban\Reason whereReasonText($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Ban\Reason whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Ban\Reason withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Ban\Reason withoutTrashed()
  * @mixin \Eloquent
  */
 class Reason extends Model
 {
-    use SoftDeletes, RecordsActivity;
+    use SoftDeletes;
     protected $primaryKey = 'id';
     protected $table = 'mship_ban_reason';
     public $timestamps = true;

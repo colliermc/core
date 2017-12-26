@@ -3,11 +3,11 @@
 namespace App\Console\Commands;
 
 use App;
-use Slack;
 use Illuminate\Console\Command as BaseCommand;
+use Slack;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class Command extends BaseCommand
+abstract class Command extends BaseCommand
 {
     /**
      * Log a string to STDOUT.

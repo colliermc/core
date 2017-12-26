@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\VisitTransfer;
 
-use Illuminate\Support\Facades\Gate;
 use App\Models\VisitTransfer\Application;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 
 class ApplicationAcceptRequest extends FormRequest
 {
@@ -16,7 +16,7 @@ class ApplicationAcceptRequest extends FormRequest
     public function rules()
     {
         return [
-            'accept_staff_note' => 'string',
+            'accept_staff_note' => 'nullable|string',
         ];
     }
 

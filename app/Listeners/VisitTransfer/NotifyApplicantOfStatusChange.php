@@ -2,8 +2,8 @@
 
 namespace App\Listeners\VisitTransfer;
 
+use App\Events\VisitTransfer\ApplicationStatusChanged as ApplicationStatusChangedEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use App\Events\VisitTransfer\ApplicationStatusChanged;
 
 class NotifyApplicantOfStatusChange implements ShouldQueue
 {
@@ -12,9 +12,9 @@ class NotifyApplicantOfStatusChange implements ShouldQueue
         //
     }
 
-    public function handle(ApplicationStatusChanged $event)
+    public function handle(ApplicationStatusChangedEvent $event)
     {
         $application = $event->application;
-        $application->account->notify(new ApplicationStatusChanged($application));
+        $application->account->notify(new \App\Notifications\ApplicationStatusChanged($application));
     }
 }

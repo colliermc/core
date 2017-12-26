@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers\Adm;
 
-use Auth;
+use App\Models\Mship\Feedback\Form;
 use View;
-use App\Models\Mship\Account;
 
 class AdmController extends \App\Http\Controllers\BaseController
 {
@@ -29,6 +28,8 @@ class AdmController extends \App\Http\Controllers\BaseController
     {
         $view = View::make($view);
 
+        $view->with('_feedbackForms', Form::whereDeletedAt(null)->orderBy('id', 'asc')->getModels());
+
         $view->with('_account', $this->account);
 
         $this->buildBreadcrumb('Administration Control Panel', '/adm/dashboard');
@@ -39,19 +40,5 @@ class AdmController extends \App\Http\Controllers\BaseController
         $view->with('_pageSubTitle', $this->getSubTitle());
 
         return $view;
-    }
-
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next) {
-            if (Auth::check()) {
-                $this->account = Auth::user();
-                $this->account->load('roles', 'roles.permissions');
-            } else {
-                $this->account = new Account();
-            }
-
-            return $next($request);
-        });
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Models\Mship;
 
-use App\Traits\RecordsActivity;
+use App\Models\Model;
 use App\Models\Mship\Permission as PermissionData;
 
 /**
@@ -10,31 +10,30 @@ use App\Models\Mship\Permission as PermissionData;
  *
  * @property int $id
  * @property string $name
- * @property bool $default
- * @property int $session_timeout
- * @property bool $password_mandatory
+ * @property int $default
+ * @property int|null $session_timeout
+ * @property int $password_mandatory
  * @property int $password_lifetime
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
+ * @property \Carbon\Carbon|null $created_at
+ * @property \Carbon\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Mship\Account[] $accounts
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Sys\Data\Change[] $dataChanges
  * @property-read bool $is_default
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Mship\Permission[] $permissions
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Role hasTimeout()
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Role isDefault()
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Role whereCreatedAt($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Role whereDefault($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Role whereId($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Role whereName($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Role wherePasswordLifetime($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Role wherePasswordMandatory($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Role whereSessionTimeout($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Role whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Role hasTimeout()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Role isDefault()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Role whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Role whereDefault($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Role whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Role whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Role wherePasswordLifetime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Role wherePasswordMandatory($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Role whereSessionTimeout($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Role whereUpdatedAt($value)
  * @mixin \Eloquent
  */
-class Role extends \App\Models\Model
+class Role extends Model
 {
-    use RecordsActivity;
-
     protected $table = 'mship_role';
     protected $primaryKey = 'id';
     protected $dates = ['created_at', 'updated_at'];
@@ -44,23 +43,18 @@ class Role extends \App\Models\Model
         'name' => 'required|between:4,40',
         'default' => 'required|boolean',
     ];
+    protected $trackedEvents = ['created', 'updated', 'deleted'];
 
-    public static function eventDeleted($model)
+    protected static function boot()
     {
-        parent::eventCreated($model);
+        parent::boot();
 
-        // Since we've deleted a role, let's delete all related accounts and permissions!
-        foreach ($model->accounts as $a) {
-            $model->accounts()->detach($a);
-        }
-
-        $model->detachPermissions($model->permissions);
+        self::created([get_called_class(), 'eventCreated']);
+        self::updated([get_called_class(), 'eventUpdated']);
     }
 
     public static function eventCreated($model)
     {
-        parent::eventCreated($model);
-
         // Let's undefault any other default models.
         if ($model->default) {
             $def = self::isDefault()->where('id', '!=', $model->getKey())->first();
@@ -73,8 +67,6 @@ class Role extends \App\Models\Model
 
     public static function eventUpdated($model)
     {
-        parent::eventUpdated($model);
-
         // Let's undefault any other default models.
         if ($model->default) {
             $def = self::isDefault()->where('id', '!=', $model->getKey())->first();

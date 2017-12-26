@@ -2,7 +2,7 @@
 
 namespace App\Models\Mship;
 
-use App\Traits\RecordsActivity;
+use App\Models\Model;
 use App\Models\Mship\Role as RoleData;
 
 /**
@@ -11,21 +11,20 @@ use App\Models\Mship\Role as RoleData;
  * @property int $id
  * @property string $name
  * @property string $display_name
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
+ * @property \Carbon\Carbon|null $created_at
+ * @property \Carbon\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Sys\Data\Change[] $dataChanges
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Mship\Role[] $roles
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Permission isName($name)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Permission whereCreatedAt($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Permission whereDisplayName($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Permission whereId($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Permission whereName($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\Mship\Permission whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Permission isName($name)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Permission whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Permission whereDisplayName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Permission whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Permission whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Mship\Permission whereUpdatedAt($value)
  * @mixin \Eloquent
  */
-class Permission extends \App\Models\Model
+class Permission extends Model
 {
-    use RecordsActivity;
-
     protected $table = 'mship_permission';
     protected $primaryKey = 'id';
     protected $dates = ['created_at', 'updated_at'];
@@ -34,14 +33,7 @@ class Permission extends \App\Models\Model
         'name' => 'required',
         'display_name' => 'required|between:3,50',
     ];
-
-    public static function eventDeleted($model)
-    {
-        parent::eventCreated($model);
-
-        // When we delete a permission, we delete the role assignments too.
-        $model->detachRoles($model->roles);
-    }
+    protected $trackedEvents = ['created', 'updated', 'deleted'];
 
     public static function scopeIsName($query, $name)
     {

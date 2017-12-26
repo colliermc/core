@@ -2,18 +2,19 @@
 
 namespace App\Models\VisitTransfer;
 
-use App\Models\Sys\Token;
-use App\Models\Mship\Account;
-use App\Models\Mship\Note\Type;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Events\VisitTransfer\ReferenceDeleted;
 use App\Events\VisitTransfer\ReferenceAccepted;
+use App\Events\VisitTransfer\ReferenceCancelled;
+use App\Events\VisitTransfer\ReferenceDeleted;
 use App\Events\VisitTransfer\ReferenceRejected;
 use App\Events\VisitTransfer\ReferenceUnderReview;
-use App\Exceptions\VisitTransfer\Reference\ReferenceNotUnderReviewException;
 use App\Exceptions\VisitTransfer\Reference\ReferenceAlreadySubmittedException;
+use App\Exceptions\VisitTransfer\Reference\ReferenceNotUnderReviewException;
+use App\Models\Mship\Account;
+use App\Models\Mship\Note\Type;
+use App\Models\Sys\Token;
+use App\Models\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
 
 /**
  * App\Models\VisitTransfer\Reference
@@ -21,17 +22,18 @@ use App\Exceptions\VisitTransfer\Reference\ReferenceAlreadySubmittedException;
  * @property int $id
  * @property int $application_id
  * @property int $account_id
- * @property string $email
- * @property string $relationship
- * @property string $reference
+ * @property string|null $email
+ * @property string|null $relationship
+ * @property string|null $reference
  * @property int $status
- * @property string $status_note
- * @property string $contacted_at
- * @property string $reminded_at
- * @property string $submitted_at
- * @property string $deleted_at
+ * @property string|null $status_note
+ * @property string|null $contacted_at
+ * @property string|null $reminded_at
+ * @property string|null $submitted_at
+ * @property string|null $deleted_at
  * @property-read \App\Models\Mship\Account $account
  * @property-read \App\Models\VisitTransfer\Application $application
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Sys\Data\Change[] $dataChanges
  * @property-read mixed $is_accepted
  * @property-read mixed $is_rejected
  * @property-read mixed $is_requested
@@ -42,27 +44,32 @@ use App\Exceptions\VisitTransfer\Reference\ReferenceAlreadySubmittedException;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Mship\Account\Note[] $notes
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection|\Illuminate\Notifications\DatabaseNotification[] $notifications
  * @property-read \App\Models\Sys\Token $tokens
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference accepted()
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference draft()
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference pending()
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference rejected()
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference requested()
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference status($status)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference statusIn($stati)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference submitted()
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference underReview()
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference whereAccountId($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference whereApplicationId($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference whereContactedAt($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference whereDeletedAt($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference whereEmail($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference whereId($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference whereReference($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference whereRelationship($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference whereRemindedAt($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference whereStatus($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference whereStatusNote($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference whereSubmittedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference accepted()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference draft()
+ * @method static bool|null forceDelete()
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference pending()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference rejected()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference requested()
+ * @method static bool|null restore()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference status($status)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference statusIn($stati)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference submitted()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference underReview()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference whereAccountId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference whereApplicationId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference whereContactedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference whereEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference whereReference($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference whereRelationship($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference whereRemindedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference whereStatusNote($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VisitTransfer\Reference whereSubmittedAt($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\VisitTransfer\Reference withoutTrashed()
  * @mixin \Eloquent
  */
 class Reference extends Model
@@ -81,12 +88,14 @@ class Reference extends Model
     ];
     protected $touches = ['application'];
     public $timestamps = false;
+    protected $trackedEvents = ['created', 'updated', 'deleted', 'restored'];
 
     const STATUS_DRAFT = 10;
     const STATUS_REQUESTED = 30;
     const STATUS_UNDER_REVIEW = 50;
     const STATUS_ACCEPTED = 90;
     const STATUS_REJECTED = 95;
+    const STATUS_CANCELLED = 100;
 
     public static $REFERENCE_IS_SUBMITTED = [
         self::STATUS_UNDER_REVIEW,
@@ -203,6 +212,8 @@ class Reference extends Model
         switch ($this->attributes['status']) {
             case self::STATUS_DRAFT:
                 return 'Draft';
+            case self::STATUS_CANCELLED:
+                return 'Cancelled';
             case self::STATUS_REQUESTED:
                 return 'Requested';
             case self::STATUS_UNDER_REVIEW:
@@ -254,6 +265,23 @@ class Reference extends Model
         }
 
         event(new ReferenceRejected($this));
+    }
+
+    public function cancel()
+    {
+        $this->status = self::STATUS_CANCELLED;
+        $this->save();
+
+        $noteContent = 'VT Reference from '.$this->account->name." was cancelled.\n".'Applicant not known to referee';
+        $note = $this->application->account->addNote(
+          Type::isShortCode('visittransfer')->first(),
+          $noteContent,
+          null,
+          $this
+      );
+        $this->notes()->save($note);
+
+        event(new ReferenceCancelled($this));
     }
 
     public function accept($staffComment = null, Account $actor = null)

@@ -2,8 +2,8 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
 use App\Models\VisitTransfer\Reference;
+use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
@@ -46,17 +46,12 @@ class ApplicationReferenceCancelled extends Notification implements ShouldQueue
      */
     public function toMail($notifiable)
     {
-        $subject = "[{$this->application->public_id}] Reference No Longer Required";
+        $subject = "[{$this->application->public_id}] Reference from '{$this->reference->account->name}' was cancelled";
 
         return (new MailMessage)
             ->from('community@vatsim.uk', 'VATSIM UK - Community Department')
             ->subject($subject)
-            ->view('visit-transfer.emails.reference.reference_not_required', [
-                'recipient' => $this->reference->account,
-                'subject' => $subject,
-                'reference' => $this->reference,
-                'application' => $this->application,
-            ]);
+            ->view('visit-transfer.emails.applicant.reference_cancelled', ['recipient' => $notifiable, 'subject' => $subject, 'reference' => $this->reference, 'application' => $this->application]);
     }
 
     /**

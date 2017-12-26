@@ -2,24 +2,37 @@
 
 namespace App\Http\Controllers\Adm;
 
-use DB;
-use Cache;
-use Input;
-use Redirect;
-use App\Models\Statistic;
-use App\Models\Mship\State;
 use App\Models\Mship\Account;
 use App\Models\Mship\Account\Email as AccountEmail;
+use App\Models\Mship\State;
+use App\Models\Statistic;
+use Cache;
+use DB;
+use Input;
+use Redirect;
 
 class Dashboard extends \App\Http\Controllers\Adm\AdmController
 {
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->middleware(function ($request, $next) {
+            if (!$this->account->hasPermission('adm/dashboard')) {
+                return redirect($this->redirectPath());
+            }
+
+            return $next($request);
+        });
+    }
+
     public function getIndex()
     {
         $statistics = Cache::remember('statistics.mship', 60, function () {
             // All Stats
             $statistics = [];
             $statistics['members_total'] = (\App\Models\Mship\Account::count());
-            $statistics['members_active'] = (\App\Models\Mship\Account::where('status', '=', 0)->count());
+            $statistics['members_active'] = (\App\Models\Mship\Account::where('inactive', 0)->count());
 
             $statistics['members_division'] = DB::table('mship_account_state')
                 ->where('state_id', '=', State::findByCode('DIVISION')->id)

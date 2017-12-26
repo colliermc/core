@@ -2,9 +2,9 @@
 
 namespace App\Notifications\Mship;
 
-use Illuminate\Bus\Queueable;
-use App\Notifications\Notification;
 use App\Models\Mship\Feedback\Feedback;
+use App\Notifications\Notification;
+use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
@@ -45,7 +45,11 @@ class FeedbackReceived extends Notification implements ShouldQueue
      */
     public function toMail($notifiable)
     {
-        $subject = 'New Member Feedback Received';
+        if ($this->feedback->targeted) {
+            $subject = 'New Member Feedback Received';
+        } else {
+            $subject = 'New Feedback Received';
+        }
 
         return (new MailMessage)
             ->from('community@vatsim.uk', 'VATSIM UK - Community Department')
