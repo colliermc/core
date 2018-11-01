@@ -135,7 +135,7 @@
                                     </tr>
                                     <tr>
                                         <td>Initial Flight Instructor</td>
-                                        <td><em>Vacant</em></td>
+                                        <td>Matthew Wilson</td>
                                     </tr>
                                     <tr>
                                         <td>VFR Flight Instructor</td>
@@ -285,6 +285,9 @@
                             <tr>
                                 <td>TG Instructor (TG1)</td>
                                 <td>Nathan Donnelly</td>
+                             <tr>
+                             	<td>TG Instructor (TG1)</td>
+                             	<td>Fraser Cooper</td>
                             </tr>
                             <tr>
                                 <td>TG Instructor (TG2)</td>
